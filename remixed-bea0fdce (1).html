@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viviane Costa Estética</title>
+<style>
+:root{--m:#3D1020;--g:#C4955A;--g2:#E8C99A;--n:#F0E6D8;--n2:#FAF6F1;--e:#1C0E0E;--ci:#8A7A72;--b:#D9C9B8;--ok:#2D6A4F;--err:#991B1B;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,serif;background:var(--n2);color:var(--e);font-size:14px;}
+.topbar{background:var(--m);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo{width:36px;height:36px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:var(--m);}
+.brand-text{color:var(--g2);font-size:15px;}
+.brand-sub{color:rgba(232,201,154,.5);font-size:10px;font-family:Arial,sans-serif;letter-spacing:.1em;}
+.btn-sm{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;border:none;letter-spacing:.05em;}
+.btn-back{background:rgba(255,255,255,.12);color:var(--g2);display:none;}
+.btn-salvar-top{background:var(--g);color:var(--m);display:none;}
+#tela-lista{display:block;}
+#tela-ficha{display:none;}
+.lista-wrap{max-width:700px;margin:0 auto;padding:20px 12px 80px;}
+.lista-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.lista-titulo{font-size:24px;color:var(--m);}
+.lista-sub{font-size:12px;color:var(--ci);margin-top:2px;font-family:Arial,sans-serif;}
+.btn-nova{background:var(--g);color:var(--m);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;border:none;}
+.busca{width:100%;padding:10px 14px;border:1.5px solid var(--b);border-radius:9px;font-family:Georgia,serif;font-size:14px;background:white;margin-bottom:16px;}
+.busca:focus{outline:none;border-color:var(--g);}
+.cliente-card{background:white;border:1.5px solid var(--b);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:8px;transition:all .15s;}
+.cliente-card:hover{border-color:var(--g);box-shadow:0 2px 12px rgba(196,149,90,.15);}
+.cc-av{width:46px;height:46px;border-radius:50%;background:var(--m);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:var(--g2);flex-shrink:0;}
+.cc-info{flex:1;min-width:0;}
+.cc-nome{font-size:16px;color:var(--m);font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-meta{font-size:11px;color:var(--ci);margin-top:3px;font-family:Arial,sans-serif;}
+.cc-setas{font-size:18px;color:var(--b);flex-shrink:0;}
+.cc-del{background:none;border:none;cursor:pointer;color:var(--ci);font-size:16px;padding:4px 8px;border-radius:4px;flex-shrink:0;}
+.cc-del:hover{color:var(--err);background:#FEE2E2;}
+.lista-vazia{text-align:center;padding:50px 16px;color:var(--ci);}
+.tabs{background:white;display:flex;overflow-x:auto;border-bottom:1px solid var(--b);position:sticky;top:56px;z-index:99;}
+.tab{padding:12px 14px;font-size:11px;font-weight:bold;letter-spacing:.08em;color:var(--ci);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:Arial,sans-serif;}
+.tab.on{color:var(--m);border-bottom-color:var(--g);}
+.main{max-width:900px;margin:0 auto;padding:16px 12px 80px;}
+.panel{display:none;}.panel.on{display:block;}
+.hero{background:var(--m);border-radius:14px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+.avatar{width:64px;height:64px;border-radius:50%;background:rgba(196,149,90,.2);border:2px solid var(--g);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--g2);font-weight:bold;flex-shrink:0;}
+.hero-nome{font-size:20px;color:var(--g2);}
+.hero-meta{font-size:11px;color:rgba(232,201,154,.5);margin-top:4px;font-family:Arial,sans-serif;}
+.prog-n{font-size:22px;font-weight:bold;color:var(--g2);}
+.prog-l{font-size:9px;color:rgba(232,201,154,.4);font-family:Arial,sans-serif;letter-spacing:.1em;text-align:center;}
+.card{background:white;border-radius:12px;border:1px solid var(--b);margin-bottom:12px;overflow:hidden;}
+.card-head{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--n2);cursor:pointer;}
+.card-icon{width:30px;height:30px;border-radius:7px;background:var(--m);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.card-title{font-size:16px;color:var(--m);flex:1;}
+.card-arrow{font-size:10px;color:var(--ci);transition:transform .25s;}
+.card-arrow.open{transform:rotate(0deg);}
+.card-arrow.closed{transform:rotate(-90deg);}
+.card-body{padding:14px 16px;}
+.card-body.hide{display:none;}
+.grid{display:grid;gap:10px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr;}
+@media(max-width:580px){.g2,.g4{grid-template-columns:1fr;}}
+@media(max-width:720px){.g4{grid-template-columns:1fr 1fr;}}
+.full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:10px;font-weight:bold;letter-spacing:.15em;text-transform:uppercase;color:var(--ci);font-family:Arial,sans-serif;}
+.field input,.field select,.field textarea{padding:8px 11px;border:1.5px solid var(--b);border-radius:7px;font-family:Georgia,serif;font-size:13px;color:var(--e);background:#FFFDF9;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(196,149,90,.1);}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.field input[readonly]{background:var(--n2);color:var(--ci);}
+.toggles{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.tog{padding:4px 11px;border-radius:20px;border:1.5px solid var(--b);font-size:11px;font-weight:bold;cursor:pointer;background:white;color:var(--ci);font-family:Arial,sans-serif;}
+.tog.on{background:var(--m);border-color:var(--m);color:var(--g2);}
+.alerta{border-radius:8px;padding:10px 12px;display:flex;gap:8px;margin-bottom:8px;font-size:12px;line-height:1.5;font-family:Arial,sans-serif;}
+.al-err{background:#FEE2E2;border:1px solid rgba(153,27,27,.2);}
+.al-warn{background:#FEF3C7;border:1px solid rgba(180,83,9,.2);}
+.div{height:1px;background:linear-gradient(to right,transparent,var(--b),transparent);margin:10px 0;}
+.med-table{width:100%;border-collapse:collapse;font-size:12px;}
+.med-table th{background:var(--m);color:var(--g2);padding:8px 10px;text-align:left;font-size:10px;font-weight:bold;font-family:Arial,sans-serif;}
+.med-table td{padding:6px 8px;border-bottom:1px solid var(--n2);vertical-align:middle;}
+.med-table input{width:65px;padding:4px 6px;border:1.5px solid var(--b);border-radius:5px;font-size:12px;text-align:center;font-family:Georgia,serif;}
+.med-table input:focus{outline:none;border-color:var(--g);}
+.d-ok{color:var(--ok);font-weight:bold;}
+.d-err{color:var(--err);font-weight:bold;}
+.d-n{color:var(--ci);}
+.graf-wrap{background:#FFFDF9;border:1px solid var(--b);border-radius:10px;padding:14px;margin-top:10px;}
+.graf-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ci);font-weight:bold;font-family:Arial,sans-serif;margin-bottom:10px;}
+.graf-bars{display:flex;align-items:flex-end;gap:6px;height:100px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.bar{width:100%;background:linear-gradient(to top,var(--m),#5A1A30);border-radius:3px 3px 0 0;}
+.bar-val{font-size:10px;font-weight:bold;color:var(--m);}
+.bar-lbl{font-size:9px;color:var(--ci);text-align:center;font-family:Arial,sans-serif;}
+.sess-card{background:var(--n2);border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:10px;}
+.sess-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sess-num{background:var(--m);color:var(--g2);font-size:15px;font-weight:bold;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sess-del{background:none;border:none;cursor:pointer;color:var(--ci);font-size:16px;padding:4px;border-radius:4px;}
+.sess-del:hover{color:var(--err);background:#FEE2E2;}
+.trat-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.tt{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:bold;cursor:pointer;border:1.5px solid var(--b);background:white;color:var(--ci);font-family:Arial,sans-serif;}
+.tt.on{background:var(--m);border-color:var(--m);color:var(--g2);}
+.params-wrap{display:none;margin-bottom:8px;}
+.params-wrap.on{display:block;}
+.params-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:6px;}
+.param{background:white;border:1.5px solid var(--b);border-radius:8px;padding:8px 10px;}
+.param-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ci);font-weight:bold;font-family:Arial,sans-serif;margin-bottom:4px;}
+.param input{width:100%;border:none;background:none;font-family:Georgia,serif;font-size:14px;font-weight:bold;color:var(--m);padding:0;outline:none;}
+.param-unit{font-size:9px;color:var(--ci);margin-top:2px;}
+.fotos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+.foto-slot{aspect-ratio:3/4;border:2px dashed var(--b);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#FFFDF9;position:relative;overflow:hidden;}
+.foto-slot:hover{border-color:var(--g);}
+.foto-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.foto-add{font-size:24px;color:var(--b);}
+.foto-txt{font-size:10px;color:var(--ci);margin-top:4px;text-align:center;}
+.foto-lbl{font-size:10px;font-weight:bold;color:var(--ci);margin-top:5px;text-align:center;font-family:Arial,sans-serif;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px;}
+.kpi{background:var(--m);border-radius:12px;padding:14px;text-align:center;}
+.kpi-icon{font-size:20px;margin-bottom:4px;}
+.kpi-val{font-size:24px;font-weight:bold;color:var(--g2);line-height:1;}
+.kpi-unit{font-size:9px;color:rgba(232,201,154,.4);letter-spacing:.1em;font-family:Arial,sans-serif;margin-top:2px;}
+.kpi-lbl{font-size:9px;color:rgba(232,201,154,.35);margin-top:4px;font-family:Arial,sans-serif;}
+.stars{display:flex;gap:3px;}
+.star{font-size:20px;cursor:pointer;color:var(--b);}
+.star.on{color:var(--g);}
+.score-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--n2);}
+.score-row:last-child{border-bottom:none;}
+.score-lbl{flex:1;font-size:13px;}
+.timeline{padding-left:20px;position:relative;}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--b);}
+.tl-item{position:relative;margin-bottom:12px;}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--g);border:2px solid white;position:absolute;left:-20px;top:3px;}
+.tl-date{font-size:10px;color:var(--ci);font-weight:bold;font-family:Arial,sans-serif;margin-bottom:3px;}
+.tl-text{font-size:12px;line-height:1.5;background:white;border:1px solid var(--b);border-radius:7px;padding:8px 10px;}
+.btn{padding:8px 16px;border-radius:7px;font-size:11px;font-weight:bold;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px;font-family:Arial,sans-serif;}
+.btn-m{background:var(--m);color:var(--g2);}
+.btn-g{background:var(--g);color:var(--m);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ok);color:white;padding:12px 24px;border-radius:24px;font-size:13px;font-family:Arial,sans-serif;font-weight:bold;z-index:999;transition:transform .35s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--err);}
+input[type=file]{display:none;}
+.loading{text-align:center;padding:30px;color:var(--ci);font-family:Arial,sans-serif;font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">VC</div>
+    <div>
+      <div class="brand-text">Viviane Costa</div>
+      <div class="brand-sub">ESTÉTICA AVANÇADA</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;">
+    <button class="btn-sm btn-back" id="btn-back" onclick="voltarLista()">← Clientes</button>
+    <button class="btn-sm btn-salvar-top" id="btn-salvar" onclick="salvarCliente()">💾 Salvar</button>
+    <button class="btn-sm" style="background:rgba(255,255,255,.1);color:var(--g2);" onclick="window.print()">🖨️</button>
+  </div>
+</div>
+
+<!-- LISTA -->
+<div id="tela-lista">
+  <div class="lista-wrap">
+    <div class="lista-header">
+      <div>
+        <div class="lista-titulo">Minhas Clientes</div>
+        <div class="lista-sub" id="lista-sub">Carregando...</div>
+      </div>
+      <button class="btn-nova" onclick="novaCliente()">+ Nova Cliente</button>
+    </div>
+    <input type="text" class="busca" id="busca" placeholder="🔍  Buscar pelo nome..." oninput="filtrarLista(this.value)">
+    <div id="lista-cont"><div class="loading">Carregando clientes...</div></div>
+  </div>
+</div>
+
+<!-- FICHA -->
+<div id="tela-ficha">
+  <div class="tabs">
+    <button class="tab on" onclick="aba('dados',this)">👤 Dados</button>
+    <button class="tab" onclick="aba('anamnese',this)">📋 Anamnese</button>
+    <button class="tab" onclick="aba('medidas',this)">📏 Medidas</button>
+    <button class="tab" onclick="aba('sessoes',this)">⚡ Sessões</button>
+    <button class="tab" onclick="aba('fotos',this)">📸 Fotos</button>
+    <button class="tab" onclick="aba('evolucao',this)">📈 Evolução</button>
+  </div>
+  <div class="main">
+
+    <!-- DADOS -->
+    <div id="p-dados" class="panel on">
+      <div class="hero">
+        <div class="avatar" id="av">?</div>
+        <div style="flex:1;min-width:0;">
+          <div class="hero-nome" id="hn">Nova Cliente</div>
+          <div class="hero-meta" id="hm">Preencha os dados abaixo</div>
+        </div>
+        <div style="flex-shrink:0;text-align:center;">
+          <div class="prog-n" id="pct">0%</div>
+          <div class="prog-l">FICHA</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">👤</div><div class="card-title">Dados Pessoais</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="grid g2">
+            <div class="field full"><label>Nome Completo *</label><input type="text" id="nome" placeholder="Nome da cliente" oninput="atualizarHero()"></div>
+            <div class="field"><label>Data de Nascimento</label><input type="date" id="nasc" onchange="atualizarHero()"></div>
+            <div class="field"><label>Idade</label><input type="number" id="idade" readonly placeholder="--"></div>
+            <div class="field"><label>Telefone / WhatsApp</label><input type="tel" id="tel" placeholder="(00) 00000-0000"></div>
+            <div class="field"><label>E-mail</label><input type="email" id="email" placeholder="email@exemplo.com"></div>
+            <div class="field"><label>CPF</label><input type="text" id="cpf" placeholder="000.000.000-00"></div>
+            <div class="field"><label>Profissão</label><input type="text" id="prof" placeholder="Profissão"></div>
+            <div class="field"><label>Como nos conheceu?</label>
+              <select id="orig"><option value="">Selecione</option><option>Instagram</option><option>Indicação</option><option>Google</option><option>WhatsApp</option><option>Outro</option></select>
+            </div>
+            <div class="field"><label>Data de Início</label><input type="date" id="inicio"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">⚖️</div><div class="card-title">Avaliação Física</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="grid g4">
+            <div class="field"><label>Peso (kg)</label><input type="number" id="peso" step="0.1" placeholder="0.0" oninput="calcImc()"></div>
+            <div class="field"><label>Altura (cm)</label><input type="number" id="alt" placeholder="000" oninput="calcImc()"></div>
+            <div class="field"><label>IMC</label><input type="text" id="imc-val" readonly placeholder="--"></div>
+            <div class="field"><label>% Gordura</label><input type="number" id="gord" step="0.1" placeholder="0.0"></div>
+          </div>
+          <div class="div"></div>
+          <div class="field"><label>Objetivo</label><textarea id="obj" placeholder="O que a cliente deseja alcançar..."></textarea></div>
+          <div class="field" style="margin-top:10px;"><label>Tratamentos de interesse</label>
+            <div class="toggles" id="trat-int">
+              <div class="tog" onclick="this.classList.toggle('on')">Celulite</div>
+              <div class="tog" onclick="this.classList.toggle('on')">Flacidez</div>
+              <div class="tog" onclick="this.classList.toggle('on')">Redução de Medidas</div>
+              <div class="tog" onclick="this.classList.toggle('on')">Drenagem</div>
+              <div class="tog" onclick="this.classList.toggle('on')">Radiofrequência</div>
+              <div class="tog" onclick="this.classList.toggle('on')">Ultrassom</div>
+              <div class="tog" onclick="this.classList.toggle('on')">Criofrequência</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANAMNESE -->
+    <div id="p-anamnese" class="panel">
+      <div id="alertas"></div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">🏥</div><div class="card-title">Histórico de Saúde</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="toggles" id="saude-tog">
+            <div class="tog" onclick="alerta(this,'Marcapasso — RF e Ultrassom contraindicados!','err')">Marcapasso</div>
+            <div class="tog" onclick="alerta(this,'Histórico oncológico — requer liberação médica.','err')">Oncológico</div>
+            <div class="tog" onclick="alerta(this,'Trombose — drenagem e pressoterapia contraindicadas.','err')">Trombose</div>
+            <div class="tog" onclick="alerta(this,'Doença cardiovascular — liberação médica necessária.','err')">Cardíaco</div>
+            <div class="tog" onclick="alerta(this,'Epilepsia — evitar estímulos luminosos e elétricos.','warn')">Epilepsia</div>
+            <div class="tog" onclick="alerta(this,'Hipertensão — monitorar PA antes e após a sessão.','warn')">Hipertensão</div>
+            <div class="tog" onclick="alerta(this,'Diabetes — atenção à sensibilidade térmica.','warn')">Diabetes</div>
+            <div class="tog" onclick="alerta(this,'Hipotireoidismo — pode influenciar resultados.','warn')">Hipotireoidismo</div>
+            <div class="tog" onclick="this.classList.toggle('on')">Varizes</div>
+            <div class="tog" onclick="this.classList.toggle('on')">Gravidez</div>
+            <div class="tog" onclick="this.classList.toggle('on')">Lactação</div>
+            <div class="tog" onclick="this.classList.toggle('on')">Nenhuma</div>
+          </div>
+          <div class="grid g2" style="margin-top:12px;">
+            <div class="field"><label>Medicamentos</label><textarea id="meds" placeholder="Liste os medicamentos..."></textarea></div>
+            <div class="field"><label>Alergias</label><textarea id="alerg" placeholder="Alergias conhecidas..."></textarea></div>
+            <div class="field"><label>Cirurgias</label><textarea id="ciru" placeholder="Cirurgias e quando..."></textarea></div>
+            <div class="field"><label>Tratamentos anteriores</label><textarea id="trat-ant" placeholder="O que já foi feito..."></textarea></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">🌿</div><div class="card-title">Hábitos de Vida</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="grid g2">
+            <div class="field"><label>Atividade física</label><select id="atv"><option value="">Selecione</option><option>Não pratica</option><option>1-2x/semana</option><option>3-4x/semana</option><option>5x ou mais</option></select></div>
+            <div class="field"><label>Tipo</label><input type="text" id="atv-tipo" placeholder="Caminhada, musculação..."></div>
+            <div class="field"><label>Alimentação</label><select id="alim"><option value="">Selecione</option><option>Muito saudável</option><option>Moderada</option><option>Processados frequentes</option><option>Acompanhamento nutricional</option></select></div>
+            <div class="field"><label>Água por dia</label><select id="agua"><option value="">Selecione</option><option>Menos de 1L</option><option>1L a 1,5L</option><option>1,5L a 2L</option><option>Mais de 2L</option></select></div>
+            <div class="field"><label>Tabagismo</label><select id="tabag"><option value="">Selecione</option><option>Não fumante</option><option>Ex-fumante</option><option>Fumante ocasional</option><option>Fumante regular</option></select></div>
+            <div class="field"><label>Sono</label><select id="sono"><option value="">Selecione</option><option>Excelente (7-9h)</option><option>Regular (5-7h)</option><option>Ruim (menos de 5h)</option><option>Insônia frequente</option></select></div>
+            <div class="field full"><label>Observações</label><textarea id="obs-hab" placeholder="Informações sobre estilo de vida..."></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIDAS -->
+    <div id="p-medidas" class="panel">
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">📏</div><div class="card-title">Evolução das Medidas (cm)</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <p style="font-size:12px;color:var(--ci);">Sistema calcula evolução automaticamente.</p>
+            <button class="btn btn-g" onclick="addColMed()">+ Sessão</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="med-table" id="med-t">
+              <thead><tr id="med-head"><th>Região</th><th>Inicial</th><th>Sessão 1</th><th>Sessão 2</th><th>Sessão 3</th><th>Total</th></tr></thead>
+              <tbody id="med-body"></tbody>
+            </table>
+          </div>
+          <div class="graf-wrap"><div class="graf-title">REDUÇÃO POR REGIÃO (cm)</div><div class="graf-bars" id="graf"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSÕES -->
+    <div id="p-sessoes" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:20px;color:var(--m);font-weight:bold;">Sessões</div>
+        <button class="btn btn-m" onclick="addSessao()">+ Nova Sessão</button>
+      </div>
+      <div id="sess-cont"></div>
+      <div id="sess-empty" style="text-align:center;padding:40px 16px;color:var(--ci);">
+        <div style="font-size:36px;margin-bottom:8px;">⚡</div>
+        <div style="font-size:18px;color:var(--m);margin-bottom:4px;">Nenhuma sessão registrada</div>
+        <div style="font-size:12px;">Clique em "Nova Sessão" para começar</div>
+      </div>
+    </div>
+
+    <!-- FOTOS -->
+    <div id="p-fotos" class="panel">
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">📸</div><div class="card-title">Registro Fotográfico</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="alerta al-warn" style="margin-bottom:12px;"><span>⚠️</span><span style="font-size:12px;font-family:Arial,sans-serif;">Fotos para uso clínico. Certifique-se de ter autorização.</span></div>
+          <div class="fotos-grid" id="fotos-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVOLUÇÃO -->
+    <div id="p-evolucao" class="panel">
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">⭐</div><div class="card-title">Avaliação de Resultados</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="score-row"><span class="score-lbl">Redução de medidas</span><div class="stars" id="sc0"><span class="star" onclick="star(0,1)">★</span><span class="star" onclick="star(0,2)">★</span><span class="star" onclick="star(0,3)">★</span><span class="star" onclick="star(0,4)">★</span><span class="star" onclick="star(0,5)">★</span></div></div>
+          <div class="score-row"><span class="score-lbl">Melhora da celulite</span><div class="stars" id="sc1"><span class="star" onclick="star(1,1)">★</span><span class="star" onclick="star(1,2)">★</span><span class="star" onclick="star(1,3)">★</span><span class="star" onclick="star(1,4)">★</span><span class="star" onclick="star(1,5)">★</span></div></div>
+          <div class="score-row"><span class="score-lbl">Firmeza / flacidez</span><div class="stars" id="sc2"><span class="star" onclick="star(2,1)">★</span><span class="star" onclick="star(2,2)">★</span><span class="star" onclick="star(2,3)">★</span><span class="star" onclick="star(2,4)">★</span><span class="star" onclick="star(2,5)">★</span></div></div>
+          <div class="score-row"><span class="score-lbl">Satisfação da cliente</span><div class="stars" id="sc3"><span class="star" onclick="star(3,1)">★</span><span class="star" onclick="star(3,2)">★</span><span class="star" onclick="star(3,3)">★</span><span class="star" onclick="star(3,4)">★</span><span class="star" onclick="star(3,5)">★</span></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">📝</div><div class="card-title">Diário de Evolução</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <textarea id="nova-obs" placeholder="Registre uma observação..." style="flex:1;padding:8px 11px;border:1.5px solid var(--b);border-radius:7px;font-family:Georgia,serif;font-size:13px;min-height:65px;resize:vertical;min-width:180px;"></textarea>
+            <button class="btn btn-m" onclick="addObs()" style="align-self:flex-end;">+ Registrar</button>
+          </div>
+          <div class="timeline" id="tl">
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">Aguardando registros</div><div class="tl-text" style="color:var(--ci);font-style:italic;">As observações aparecerão aqui.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" onclick="togCard(this)">
+          <div class="card-icon">💡</div><div class="card-title">Recomendações</div><div class="card-arrow open">▼</div>
+        </div>
+        <div class="card-body">
+          <div class="grid g2">
+            <div class="field"><label>Próxima sessão</label><input type="date" id="prox-sess"></div>
+            <div class="field"><label>Frequência</label><select id="freq"><option value="">Selecione</option><option>1x por semana</option><option>2x por semana</option><option>A cada 15 dias</option><option>1x por mês</option></select></div>
+            <div class="field full"><label>Orientações para casa</label><textarea id="orient" placeholder="Cuidados, produtos, hábitos..."></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ BANCO DE DADOS com window.storage ═══
+const DB = {
+  async salvar(key, valor) {
+    try {
+      await window.storage.set(key, JSON.stringify(valor));
+      return true;
+    } catch(e) { return false; }
+  },
+  async carregar(key) {
+    try {
+      const r = await window.storage.get(key);
+      return r ? JSON.parse(r.value) : null;
+    } catch(e) { return null; }
+  },
+  async deletar(key) {
+    try { await window.storage.delete(key); return true; }
+    catch(e) { return false; }
+  },
+  async listarClientes() {
+    try {
+      const r = await window.storage.list('vc_cliente_');
+      return r ? r.keys : [];
+    } catch(e) { return []; }
+  }
+};
+
+// ═══ ESTADO ═══
+let clienteKey = null;
+let sCount = 0, nMedCols = 3, obsN = 0;
+let alertMap = {};
+const scores = [0,0,0,0];
+
+const REGS = ['Cintura','Abdômen','Quadril','Coxa D','Coxa E','Braço D','Braço E','Glúteo'];
+const TRATS = [
+  {id:'cel',lbl:'Celulite',params:[{l:'Técnica',u:''},{l:'Pressão',u:'mmHg'},{l:'Duração',u:'min'},{l:'Região',u:''}]},
+  {id:'fla',lbl:'Flacidez',params:[{l:'Técnica',u:''},{l:'Intensidade',u:'W'},{l:'Duração',u:'min'},{l:'Passes',u:'x'}]},
+  {id:'dre',lbl:'Drenagem',params:[{l:'Técnica',u:''},{l:'Duração',u:'min'},{l:'Região',u:''},{l:'Nível',u:''}]},
+  {id:'rf', lbl:'Radiofrequência',params:[{l:'Intensidade',u:'W'},{l:'Temperatura',u:'°C'},{l:'Duração',u:'min'},{l:'Passes',u:'x'}]},
+  {id:'us', lbl:'Ultrassom',params:[{l:'Frequência',u:'kHz'},{l:'Intensidade',u:'W/cm²'},{l:'Duração',u:'min'},{l:'Modo',u:''}]},
+  {id:'cri',lbl:'Criofrequência',params:[{l:'Temperatura',u:'°C'},{l:'Duração',u:'min'},{l:'Ciclos',u:'x'},{l:'Intensidade',u:'%'}]},
+];
+const ANGS = ['Frontal','Lateral D','Lateral E','Costas','Detalhe 1','Detalhe 2'];
+
+// ═══ NAVEGAÇÃO ═══
+function mostrarLista() {
+  document.getElementById('tela-lista').style.display = 'block';
+  document.getElementById('tela-ficha').style.display = 'none';
+  document.getElementById('btn-back').style.display = 'none';
+  document.getElementById('btn-salvar').style.display = 'none';
+  renderLista();
+}
+function mostrarFicha() {
+  document.getElementById('tela-lista').style.display = 'none';
+  document.getElementById('tela-ficha').style.display = 'block';
+  document.getElementById('btn-back').style.display = 'inline-block';
+  document.getElementById('btn-salvar').style.display = 'inline-block';
+}
+function voltarLista() {
+  if(confirm('Voltar para a lista?\n\nSe não salvou, os dados serão perdidos.')) mostrarLista();
+}
+
+// ═══ LISTA ═══
+async function renderLista(filtro='') {
+  const cont = document.getElementById('lista-cont');
+  const sub = document.getElementById('lista-sub');
+  cont.innerHTML = '<div class="loading">Carregando...</div>';
+  const keys = await DB.listarClientes();
+  const clientes = [];
+  for(const k of keys) {
+    const d = await DB.carregar(k);
+    if(d) clientes.push({key:k, data:d});
+  }
+  // ordenar por nome
+  clientes.sort((a,b)=>(a.data.nome||'').localeCompare(b.data.nome||''));
+  const f = filtro.toLowerCase();
+  const vis = f ? clientes.filter(c=>(c.data.nome||'').toLowerCase().includes(f)) : clientes;
+  sub.textContent = `${clientes.length} cliente${clientes.length!==1?'s':''} cadastrada${clientes.length!==1?'s':''}`;
+  if(vis.length===0) {
+    cont.innerHTML = `<div class="lista-vazia"><div style="font-size:40px;margin-bottom:10px;">👩</div><div style="font-size:18px;color:var(--m);margin-bottom:5px;">${f?'Nenhum resultado':'Nenhuma cliente ainda'}</div><p style="font-size:12px;">${f?'Tente outro nome.':'Clique em "+ Nova Cliente" para começar.'}</p></div>`;
+    return;
+  }
+  cont.innerHTML = vis.map(c => {
+    const nome = c.data.nome || 'Sem nome';
+    const p = nome.trim().split(' ');
+    const av = (p.length>=2 ? p[0][0]+p[p.length-1][0] : p[0][0]).toUpperCase();
+    const ini = c.data.inicio ? new Date(c.data.inicio+'T12:00:00').toLocaleDateString('pt-BR') : '';
+    const tel = c.data.tel || '';
+    return `<div class="cliente-card" onclick="abrirCliente('${c.key}')">
+      <div class="cc-av">${av}</div>
+      <div class="cc-info">
+        <div class="cc-nome">${nome}</div>
+        <div class="cc-meta">${tel}${ini?' · Desde '+ini:''}</div>
+      </div>
+      <button class="cc-del" onclick="event.stopPropagation();deletarCliente('${c.key}','${nome.replace(/'/g,"\\'")}')">🗑️</button>
+      <div class="cc-setas">›</div>
+    </div>`;
+  }).join('');
+}
+function filtrarLista(v) { renderLista(v); }
+
+async function deletarCliente(key, nome) {
+  if(!confirm(`Remover "${nome}" permanentemente?\n\nEsta ação não pode ser desfeita.`)) return;
+  const ok = await DB.deletar(key);
+  if(ok) { toast('🗑️ '+nome+' removida'); renderLista(document.getElementById('busca').value); }
+  else toast('❌ Erro ao remover','err');
+}
+
+// ═══ NOVA CLIENTE ═══
+function novaCliente() {
+  clienteKey = 'vc_cliente_' + Date.now();
+  resetarFicha();
+  mostrarFicha();
+  aba('dados', document.querySelector('.tab'));
+}
+
+// ═══ ABRIR CLIENTE ═══
+async function abrirCliente(key) {
+  clienteKey = key;
+  resetarFicha();
+  const d = await DB.carregar(key);
+  if(d) carregarDados(d);
+  mostrarFicha();
+  aba('dados', document.querySelector('.tab'));
+}
+
+// ═══ SALVAR ═══
+async function salvarCliente() {
+  const nome = document.getElementById('nome').value.trim();
+  if(!nome) { toast('⚠️ Informe o nome da cliente','err'); return; }
+  const btn = document.getElementById('btn-salvar');
+  btn.textContent = '⏳ Salvando...';
+  btn.disabled = true;
+  const dados = coletarDados();
+  const ok = await DB.salvar(clienteKey, dados);
+  btn.textContent = '💾 Salvar';
+  btn.disabled = false;
+  if(ok) toast('✅ '+nome+' salva com sucesso!');
+  else toast('❌ Erro ao salvar. Tente novamente.','err');
+}
+
+// ═══ COLETAR DADOS ═══
+function coletarDados() {
+  const g = id => document.getElementById(id)?.value || '';
+  const medidas = REGS.map((r,i) => {
+    const row = {reg:r};
+    for(let c=0;c<=nMedCols;c++) row['c'+c] = document.getElementById(`m${i}_${c}`)?.value||'';
+    return row;
+  });
+  const obsItems = [...document.querySelectorAll('#tl .tl-item')].map(el=>({
+    date: el.querySelector('.tl-date')?.textContent||'',
+    text: el.querySelector('.tl-text')?.textContent||''
+  })).filter(o=>o.text && !o.text.includes('aparecerão aqui'));
+  // sessões
+  const sessoes = [...document.querySelectorAll('.sess-card')].map(sc => {
+    const inputs = [...sc.querySelectorAll('input,select,textarea')].map(el=>el.value);
+    const trats = [...sc.querySelectorAll('.tt.on')].map(t=>t.textContent);
+    return {inputs, trats};
+  });
+  return {
+    nome:g('nome'), nasc:g('nasc'), tel:g('tel'), email:g('email'), cpf:g('cpf'),
+    prof:g('prof'), orig:g('orig'), inicio:g('inicio'),
+    peso:g('peso'), alt:g('alt'), gord:g('gord'), obj:g('obj'),
+    meds:g('meds'), alerg:g('alerg'), ciru:g('ciru'), tratAnt:g('trat-ant'),
+    atv:g('atv'), atvTipo:g('atv-tipo'), alim:g('alim'), agua:g('agua'),
+    tabag:g('tabag'), sono:g('sono'), obsHab:g('obs-hab'),
+    proxSess:g('prox-sess'), freq:g('freq'), orient:g('orient'),
+    scores:[...scores], medidas, nMedCols, obsItems,
+    tratInt:[...document.querySelectorAll('#trat-int .tog.on')].map(t=>t.textContent),
+    saude:[...document.querySelectorAll('#saude-tog .tog.on')].map(t=>t.textContent),
+    sCount, sessoes,
+    salvoEm: new Date().toISOString()
+  };
+}
+
+// ═══ CARREGAR DADOS ═══
+function carregarDados(d) {
+  const s = (id,v) => { const el=document.getElementById(id); if(el&&v!==undefined&&v!==null) el.value=v; };
+  s('nome',d.nome); s('nasc',d.nasc); s('tel',d.tel); s('email',d.email); s('cpf',d.cpf);
+  s('prof',d.prof); s('orig',d.orig); s('inicio',d.inicio);
+  s('peso',d.peso); s('alt',d.alt); s('gord',d.gord); s('obj',d.obj);
+  s('meds',d.meds); s('alerg',d.alerg); s('ciru',d.ciru); s('trat-ant',d.tratAnt);
+  s('atv',d.atv); s('atv-tipo',d.atvTipo); s('alim',d.alim); s('agua',d.agua);
+  s('tabag',d.tabag); s('sono',d.sono); s('obs-hab',d.obsHab);
+  s('prox-sess',d.proxSess); s('freq',d.freq); s('orient',d.orient);
+  if(d.scores) d.scores.forEach((v,i)=>{ scores[i]=v; document.querySelectorAll(`#sc${i} .star`).forEach((st,j)=>st.classList.toggle('on',j<v)); });
+  if(d.tratInt) document.querySelectorAll('#trat-int .tog').forEach(t=>t.classList.toggle('on',d.tratInt.includes(t.textContent)));
+  if(d.saude) document.querySelectorAll('#saude-tog .tog').forEach(t=>t.classList.toggle('on',d.saude.includes(t.textContent)));
+  if(d.medidas && d.nMedCols) {
+    nMedCols = d.nMedCols;
+    const head = document.querySelector('#med-t thead tr');
+    head.innerHTML = '<th>Região</th><th>Inicial</th>';
+    for(let c=1;c<=nMedCols;c++) head.innerHTML += `<th>Sessão ${c}</th>`;
+    head.innerHTML += '<th>Total</th>';
+    renderMed(d.medidas);
+  }
+  if(d.obsItems && d.obsItems.length>0) {
+    document.getElementById('tl').innerHTML = d.obsItems.map(o=>`<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">${o.date}</div><div class="tl-text">${o.text}</div></div>`).join('');
+    obsN = d.obsItems.length;
+  }
+  atualizarHero(); calcImc(); prog();
+}
+
+// ═══ RESET ═══
+function resetarFicha() {
+  sCount=0; nMedCols=3; obsN=0; alertMap={}; scores.fill(0);
+  document.querySelectorAll('#tela-ficha input:not([readonly]),#tela-ficha select,#tela-ficha textarea').forEach(el=>el.value='');
+  document.getElementById('imc-val').value='';
+  document.querySelectorAll('#tela-ficha .tog').forEach(t=>t.classList.remove('on'));
+  document.getElementById('alertas').innerHTML='';
+  scores.forEach((_,i)=>document.querySelectorAll(`#sc${i} .star`).forEach(s=>s.classList.remove('on')));
+  document.getElementById('sess-cont').innerHTML='';
+  document.getElementById('sess-empty').style.display='block';
+  document.getElementById('tl').innerHTML='<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">Aguardando registros</div><div class="tl-text" style="color:var(--ci);font-style:italic;">As observações aparecerão aqui.</div></div>';
+  document.getElementById('av').textContent='?';
+  document.getElementById('hn').textContent='Nova Cliente';
+  document.getElementById('hm').textContent='Preencha os dados abaixo';
+  document.getElementById('pct').textContent='0%';
+  // resetar header medidas
+  const head = document.querySelector('#med-t thead tr');
+  head.innerHTML='<th>Região</th><th>Inicial</th><th>Sessão 1</th><th>Sessão 2</th><th>Sessão 3</th><th>Total</th>';
+  renderMed();
+  renderFotos();
+}
+
+// ═══ HERO ═══
+function atualizarHero() {
+  const n = document.getElementById('nome').value;
+  if(n) {
+    document.getElementById('hn').textContent = n;
+    const p = n.trim().split(' ');
+    document.getElementById('av').textContent = (p.length>=2?p[0][0]+p[p.length-1][0]:p[0][0]).toUpperCase();
+  } else { document.getElementById('hn').textContent='Nova Cliente'; document.getElementById('av').textContent='?'; }
+  const nasc = document.getElementById('nasc').value;
+  if(nasc) {
+    const hoje=new Date(), dn=new Date(nasc+'T12:00:00');
+    let id=hoje.getFullYear()-dn.getFullYear();
+    if(hoje.getMonth()-dn.getMonth()<0||(hoje.getMonth()-dn.getMonth()===0&&hoje.getDate()<dn.getDate()))id--;
+    document.getElementById('idade').value=id;
+    document.getElementById('hm').textContent=id+' anos · Cliente ativa';
+  }
+  prog();
+}
+function calcImc() {
+  const p=parseFloat(document.getElementById('peso').value);
+  const a=parseFloat(document.getElementById('alt').value)/100;
+  if(p&&a) document.getElementById('imc-val').value=(p/(a*a)).toFixed(1);
+}
+function prog() {
+  const ids=['nome','tel','inicio','obj','peso'];
+  const n=ids.filter(id=>document.getElementById(id)?.value).length;
+  document.getElementById('pct').textContent=Math.round(n/ids.length*100)+'%';
+}
+
+// ═══ ALERTAS ═══
+function alerta(el,msg,tipo) {
+  el.classList.toggle('on');
+  const key=msg.substring(0,20);
+  if(el.classList.contains('on')) alertMap[key]={msg,tipo};
+  else delete alertMap[key];
+  document.getElementById('alertas').innerHTML=Object.values(alertMap).map(a=>`<div class="alerta al-${a.tipo}"><span>${a.tipo==='err'?'🚨':'⚠️'}</span><span style="font-size:12px;font-family:Arial,sans-serif;">${a.msg}</span></div>`).join('');
+}
+
+// ═══ TABS ═══
+function aba(id,btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='evolucao') kpis();
+}
+function togCard(h) {
+  const b=h.nextElementSibling, a=h.querySelector('.card-arrow');
+  b.classList.toggle('hide'); a.classList.toggle('open'); a.classList.toggle('closed');
+}
+
+// ═══ MEDIDAS ═══
+function renderMed(saved) {
+  const tb=document.getElementById('med-body'); tb.innerHTML='';
+  REGS.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    let h=`<td style="font-weight:bold;color:var(--m);white-space:nowrap;">${r}</td>`;
+    for(let c=0;c<=nMedCols;c++){
+      const v=saved?saved[i]['c'+c]:'';
+      h+=`<td><input type="number" step="0.1" placeholder="0.0" id="m${i}_${c}" value="${v||''}" oninput="delta(${i})"></td>`;
+    }
+    h+=`<td id="dt${i}" class="d-n">—</td>`;
+    tr.innerHTML=h; tb.appendChild(tr);
+    if(saved) delta(i);
+  });
+  graf();
+}
+function delta(i) {
+  const ini=parseFloat(document.getElementById(`m${i}_0`)?.value)||0;
+  let ult=0;
+  for(let c=nMedCols;c>=1;c--){const v=parseFloat(document.getElementById(`m${i}_${c}`)?.value);if(!isNaN(v)&&v>0){ult=v;break;}}
+  const dt=document.getElementById(`dt${i}`);
+  if(ini>0&&ult>0){const d=+(ini-ult).toFixed(1);dt.className=d>0?'d-ok':d<0?'d-err':'d-n';dt.textContent=d>0?`-${d} cm ✓`:d<0?`+${Math.abs(d)} cm`:'0 cm';}
+  else{dt.className='d-n';dt.textContent='—';}
+  graf();
+}
+function addColMed() {
+  nMedCols++;
+  const head=document.querySelector('#med-t thead tr');
+  const th=document.createElement('th');th.textContent=`Sessão ${nMedCols}`;
+  head.insertBefore(th,head.lastElementChild);
+  REGS.forEach((_,i)=>{
+    const row=document.querySelectorAll('#med-body tr')[i];
+    const td=document.createElement('td');
+    td.innerHTML=`<input type="number" step="0.1" placeholder="0.0" id="m${i}_${nMedCols}" oninput="delta(${i})">`;
+    row.insertBefore(td,row.lastElementChild);
+  });
+}
+function graf() {
+  const g=document.getElementById('graf'); g.innerHTML='';
+  REGS.forEach((r,i)=>{
+    const ini=parseFloat(document.getElementById(`m${i}_0`)?.value)||0;
+    let ult=0;
+    for(let c=nMedCols;c>=1;c--){const v=parseFloat(document.getElementById(`m${i}_${c}`)?.value);if(!isNaN(v)&&v>0){ult=v;break;}}
+    const diff=ini>0&&ult>0?Math.max(0,ini-ult):0;
+    const h=Math.min(diff/10*90,90);
+    g.innerHTML+=`<div class="bar-wrap"><div class="bar-val">${diff>0?diff.toFixed(1):'-'}</div><div class="bar" style="height:${h}px;min-height:${diff>0?3:0}px;"></div><div class="bar-lbl">${r.substring(0,5)}</div></div>`;
+  });
+}
+
+// ═══ SESSÕES ═══
+function addSessao() {
+  sCount++;
+  document.getElementById('sess-empty').style.display='none';
+  const today=new Date().toISOString().split('T')[0];
+  const tags=TRATS.map(t=>`<div class="tt" id="t${sCount}_${t.id}" onclick="togTrat(${sCount},'${t.id}')">${t.lbl}</div>`).join('');
+  const params=TRATS.map(t=>`<div class="params-wrap" id="pw${sCount}_${t.id}">
+    <div style="font-size:10px;font-weight:bold;color:var(--ci);font-family:Arial,sans-serif;margin:8px 0 4px;">${t.lbl}</div>
+    <div class="params-grid">${t.params.map(p=>`<div class="param"><div class="param-lbl">${p.l}</div><input type="text" placeholder="—"><div class="param-unit">${p.u}</div></div>`).join('')}</div>
+  </div>`).join('');
+  document.getElementById('sess-cont').insertAdjacentHTML('afterbegin',`
+  <div class="sess-card" id="sc${sCount}">
+    <div class="sess-head">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="sess-num">${sCount}</div>
+        <div>
+          <div style="font-size:16px;font-weight:bold;color:var(--m);">Sessão ${sCount}</div>
+          <input type="date" value="${today}" style="font-size:11px;color:var(--ci);border:none;background:none;font-family:Arial,sans-serif;">
+        </div>
+      </div>
+      <button class="sess-del" onclick="delSessao(${sCount})">🗑️</button>
+    </div>
+    <div style="font-size:10px;font-weight:bold;color:var(--ci);font-family:Arial,sans-serif;margin-bottom:6px;">TRATAMENTOS REALIZADOS</div>
+    <div class="trat-tags">${tags}</div>
+    <div id="prms${sCount}">${params}</div>
+    <div class="div"></div>
+    <div class="grid g2">
+      <div class="field"><label>Reação</label><select><option value="">Selecione</option><option>Muito bem</option><option>Bem — leve desconforto</option><option>Desconforto moderado</option><option>Interrompido</option></select></div>
+      <div class="field"><label>Próxima sessão</label><input type="date"></div>
+      <div class="field full"><label>Observações</label><textarea placeholder="Evolução, ajustes..."></textarea></div>
+    </div>
+  </div>`);
+}
+function togTrat(s,id) {
+  const tag=document.getElementById(`t${s}_${id}`);
+  tag.classList.toggle('on');
+  document.getElementById(`pw${s}_${id}`)?.classList.toggle('on',tag.classList.contains('on'));
+}
+function delSessao(n) {
+  if(confirm('Remover esta sessão?')){
+    document.getElementById(`sc${n}`)?.remove();
+    if(!document.querySelector('.sess-card')){document.getElementById('sess-empty').style.display='block';sCount=0;}
+  }
+}
+
+// ═══ FOTOS ═══
+function renderFotos() {
+  document.getElementById('fotos-grid').innerHTML=ANGS.map((a,i)=>`
+  <div>
+    <div class="foto-slot" id="fs${i}" onclick="document.getElementById('fi${i}').click()">
+      <span class="foto-add">📷</span><span class="foto-txt">${a}</span>
+    </div>
+    <input type="file" id="fi${i}" accept="image/*" onchange="loadFoto(${i},this)">
+    <div class="foto-lbl">${a}</div>
+  </div>`).join('');
+}
+function loadFoto(i,inp) {
+  if(!inp.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const s=document.getElementById(`fs${i}`);
+    s.innerHTML=`<img src="${e.target.result}" alt="foto">`;
+    s.onclick=()=>document.getElementById(`fi${i}`).click();
+  };
+  r.readAsDataURL(inp.files[0]);
+}
+
+// ═══ STARS ═══
+function star(gi,val) {
+  scores[gi]=val;
+  document.querySelectorAll(`#sc${gi} .star`).forEach((s,i)=>s.classList.toggle('on',i<val));
+}
+
+// ═══ OBS ═══
+function addObs() {
+  const txt=document.getElementById('nova-obs').value.trim();
+  if(!txt)return;
+  obsN++;
+  const tl=document.getElementById('tl');
+  if(obsN===1) tl.innerHTML='';
+  const d=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  tl.insertAdjacentHTML('afterbegin',`<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">${d}</div><div class="tl-text">${txt}</div></div>`);
+  document.getElementById('nova-obs').value='';
+}
+
+// ═══ KPIs ═══
+function kpis() {
+  const ns=document.querySelectorAll('.sess-card').length;
+  let tot=0;
+  REGS.forEach((_,i)=>{
+    const ini=parseFloat(document.getElementById(`m${i}_0`)?.value)||0;
+    let ult=0;
+    for(let c=nMedCols;c>=1;c--){const v=parseFloat(document.getElementById(`m${i}_${c}`)?.value);if(!isNaN(v)&&v>0){ult=v;break;}}
+    if(ini>0&&ult>0) tot+=Math.max(0,ini-ult);
+  });
+  const avg=(scores.reduce((a,b)=>a+b,0)/4).toFixed(1);
+  const ini=document.getElementById('inicio').value;
+  const dias=ini?Math.floor((new Date()-new Date(ini+'T12:00:00'))/86400000):'—';
+  document.getElementById('kpis').innerHTML=[
+    {ic:'⚡',v:ns,u:'sessões',l:'Realizadas'},
+    {ic:'📏',v:tot.toFixed(1),u:'cm',l:'Total reduzido'},
+    {ic:'⭐',v:avg,u:'/ 5',l:'Avaliação'},
+    {ic:'📅',v:dias,u:'dias',l:'Em tratamento'},
+  ].map(k=>`<div class="kpi"><div class="kpi-icon">${k.ic}</div><div class="kpi-val">${k.v}</div><div class="kpi-unit">${k.u}</div><div class="kpi-lbl">${k.l}</div></div>`).join('');
+}
+
+// ═══ TOAST ═══
+function toast(msg, tipo='ok') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(tipo==='err'?' err':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══ INIT ═══
+renderMed();
+renderFotos();
+mostrarLista();
+</script>
+</body>
+</html>
