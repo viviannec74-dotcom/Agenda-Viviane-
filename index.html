@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Viviane Costa Estética</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
 :root{--m:#3D1020;--g:#C4955A;--g2:#E8C99A;--n:#F0E6D8;--n2:#FAF6F1;--e:#1C0E0E;--ci:#8A7A72;--b:#D9C9B8;--ok:#2D6A4F;--err:#991B1B;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -50,7 +52,7 @@ body{font-family:Georgia,serif;background:var(--n2);color:var(--e);font-size:14p
 .card-head{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--n2);cursor:pointer;}
 .card-icon{width:30px;height:30px;border-radius:7px;background:var(--m);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .card-title{font-size:16px;color:var(--m);flex:1;}
-.card-arrow{font-size:10px;color:var(--ci);transition:transform .25s;}
+.card-arrow{font-size:10px;color:var(--ci);}
 .card-body{padding:14px 16px;}
 .card-body.hide{display:none;}
 .grid{display:grid;gap:10px;}
@@ -131,10 +133,12 @@ body{font-family:Georgia,serif;background:var(--n2);color:var(--e);font-size:14p
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ok);color:white;padding:12px 24px;border-radius:24px;font-size:13px;font-family:Arial,sans-serif;font-weight:bold;z-index:999;transition:transform .35s;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.err{background:var(--err);}
+.loading{text-align:center;padding:30px;color:var(--ci);font-family:Arial,sans-serif;font-size:13px;}
 input[type=file]{display:none;}
 </style>
 </head>
 <body>
+
 <div class="topbar">
   <div class="brand">
     <div class="logo">VC</div>
@@ -155,12 +159,12 @@ input[type=file]{display:none;}
     <div class="lista-header">
       <div>
         <div class="lista-titulo">Minhas Clientes</div>
-        <div class="lista-sub" id="lista-sub">0 clientes</div>
+        <div class="lista-sub" id="lista-sub">Carregando...</div>
       </div>
       <button class="btn-nova" onclick="novaCliente()">+ Nova Cliente</button>
     </div>
     <input type="text" class="busca" id="busca" placeholder="Buscar pelo nome..." oninput="filtrarLista(this.value)">
-    <div id="lista-cont"></div>
+    <div id="lista-cont"><div class="loading">Conectando ao banco de dados...</div></div>
   </div>
 </div>
 
@@ -174,6 +178,7 @@ input[type=file]{display:none;}
     <button class="tab" onclick="aba('evolucao',this)">Evolucao</button>
   </div>
   <div class="main">
+
     <div id="p-dados" class="panel on">
       <!-- BUSCA RAPIDA -->
       <div style="background:white;border:1.5px solid var(--b);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;gap:8px;align-items:center;">
@@ -182,6 +187,7 @@ input[type=file]{display:none;}
           style="flex:1;border:none;background:none;font-family:Georgia,serif;font-size:14px;color:var(--e);outline:none;">
       </div>
       <div id="busca-resultado" style="display:none;background:white;border:1.5px solid var(--g);border-radius:12px;margin-bottom:12px;overflow:hidden;max-height:220px;overflow-y:auto;"></div>
+
       <div class="hero">
         <div class="avatar" id="av">?</div>
         <div style="flex:1;min-width:0;">
@@ -193,6 +199,7 @@ input[type=file]{display:none;}
           <div class="prog-l">FICHA</div>
         </div>
       </div>
+
       <div class="card">
         <div class="card-head" onclick="togCard(this)">
           <div class="card-icon">👤</div><div class="card-title">Dados Pessoais</div><div class="card-arrow">▼</div>
@@ -377,31 +384,44 @@ input[type=file]{display:none;}
 <div class="toast" id="toast"></div>
 
 <script>
-// BANCO DE DADOS - localStorage
+// FIREBASE CONFIG
+var firebaseConfig = {
+  apiKey: "AIzaSyD_IBLmLFQmXkVboUPUGaD2CZVa59dFMcE",
+  authDomain: "cliente-5c7d2.firebaseapp.com",
+  databaseURL: "https://cliente-5c7d2-default-rtdb.firebaseio.com",
+  projectId: "cliente-5c7d2",
+  storageBucket: "cliente-5c7d2.firebasestorage.app",
+  messagingSenderId: "195096526858",
+  appId: "1:195096526858:web:b8a8a5b5541d3aecce1ff3"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+// BANCO DE DADOS
 var DB = {
-  salvar: function(key, valor) {
-    try {
-      localStorage.setItem(key, JSON.stringify(valor));
-      return true;
-    } catch(e) { return false; }
+  salvar: function(key, valor, cb) {
+    db.ref('clientes/' + key).set(valor, function(err) {
+      if(cb) cb(!err);
+    });
   },
-  carregar: function(key) {
-    try {
-      var r = localStorage.getItem(key);
-      return r ? JSON.parse(r) : null;
-    } catch(e) { return null; }
+  carregar: function(key, cb) {
+    db.ref('clientes/' + key).once('value', function(snap) {
+      cb(snap.val());
+    });
   },
-  deletar: function(key) {
-    try { localStorage.removeItem(key); return true; }
-    catch(e) { return false; }
+  deletar: function(key, cb) {
+    db.ref('clientes/' + key).remove(function(err) {
+      if(cb) cb(!err);
+    });
   },
-  listar: function() {
-    var keys = [];
-    for(var i=0; i<localStorage.length; i++) {
-      var k = localStorage.key(i);
-      if(k && k.indexOf('vc_') === 0) keys.push(k);
-    }
-    return keys;
+  listar: function(cb) {
+    db.ref('clientes').once('value', function(snap) {
+      var lista = [];
+      snap.forEach(function(child) {
+        lista.push({key: child.key, data: child.val()});
+      });
+      cb(lista);
+    });
   }
 };
 
@@ -409,6 +429,7 @@ var clienteKey = null;
 var sCount = 0, nMedCols = 3, obsN = 0;
 var alertMap = {};
 var scores = [0,0,0,0];
+var todosClientes = [];
 var REGS = ['Cintura','Abdomen','Quadril','Coxa D','Coxa E','Braco D','Braco E','Gluteo'];
 var TRATS = [
   {id:'cel',lbl:'Celulite',params:[{l:'Tecnica',u:''},{l:'Pressao',u:'mmHg'},{l:'Duracao',u:'min'},{l:'Regiao',u:''}]},
@@ -427,14 +448,12 @@ function mostrarLista() {
   document.getElementById('btn-salvar').style.display = 'none';
   renderLista();
 }
-
 function mostrarFicha() {
   document.getElementById('tela-lista').style.display = 'none';
   document.getElementById('tela-ficha').style.display = 'block';
   document.getElementById('btn-back').style.display = 'inline-block';
   document.getElementById('btn-salvar').style.display = 'inline-block';
 }
-
 function voltarLista() {
   if(confirm('Voltar para a lista? Salve antes para nao perder dados.')) mostrarLista();
 }
@@ -443,50 +462,47 @@ function renderLista(filtro) {
   filtro = filtro || '';
   var cont = document.getElementById('lista-cont');
   var sub = document.getElementById('lista-sub');
-  var keys = DB.listar();
-  var clientes = [];
-  for(var i=0; i<keys.length; i++) {
-    var d = DB.carregar(keys[i]);
-    if(d) clientes.push({key:keys[i], data:d});
-  }
-  clientes.sort(function(a,b){ return (a.data.nome||'').localeCompare(b.data.nome||''); });
-  var f = filtro.toLowerCase();
-  var vis = f ? clientes.filter(function(c){ return (c.data.nome||'').toLowerCase().indexOf(f) >= 0; }) : clientes;
-  sub.textContent = clientes.length + ' cliente' + (clientes.length !== 1 ? 's' : '') + ' cadastrada' + (clientes.length !== 1 ? 's' : '');
-  if(vis.length === 0) {
-    cont.innerHTML = '<div class="lista-vazia"><div style="font-size:40px;margin-bottom:10px;">👩</div><div style="font-size:18px;color:var(--m);margin-bottom:5px;">' + (f ? 'Nenhum resultado' : 'Nenhuma cliente ainda') + '</div><p style="font-size:12px;">' + (f ? 'Tente outro nome.' : 'Clique em Nova Cliente para comecar.') + '</p></div>';
-    return;
-  }
-  var html = '';
-  for(var i=0; i<vis.length; i++) {
-    var c = vis[i];
-    var nome = c.data.nome || 'Sem nome';
-    var p = nome.trim().split(' ');
-    var av = (p.length >= 2 ? p[0][0] + p[p.length-1][0] : p[0][0]).toUpperCase();
-    var ini = c.data.inicio ? new Date(c.data.inicio + 'T12:00:00').toLocaleDateString('pt-BR') : '';
-    var tel = c.data.tel || '';
-    var safeKey = c.key.replace(/'/g, "\\'");
-    var safeName = nome.replace(/'/g, "\\'");
-    html += '<div class="cliente-card" onclick="abrirCliente(\'' + safeKey + '\')">';
-    html += '<div class="cc-av">' + av + '</div>';
-    html += '<div class="cc-info"><div class="cc-nome">' + nome + '</div>';
-    html += '<div class="cc-meta">' + tel + (ini ? ' - Desde ' + ini : '') + '</div></div>';
-    html += '<button class="cc-del" onclick="event.stopPropagation();deletarCliente(\'' + safeKey + '\',\'' + safeName + '\')">🗑️</button>';
-    html += '<div class="cc-setas">›</div></div>';
-  }
-  cont.innerHTML = html;
+  cont.innerHTML = '<div class="loading">Carregando...</div>';
+  DB.listar(function(clientes) {
+    todosClientes = clientes;
+    clientes.sort(function(a,b){ return (a.data.nome||'').localeCompare(b.data.nome||''); });
+    var f = filtro.toLowerCase();
+    var vis = f ? clientes.filter(function(c){ return (c.data.nome||'').toLowerCase().indexOf(f) >= 0; }) : clientes;
+    sub.textContent = clientes.length + ' cliente' + (clientes.length !== 1 ? 's' : '') + ' cadastrada' + (clientes.length !== 1 ? 's' : '');
+    if(vis.length === 0) {
+      cont.innerHTML = '<div class="lista-vazia"><div style="font-size:40px;margin-bottom:10px;">👩</div><div style="font-size:18px;color:var(--m);margin-bottom:5px;">' + (f ? 'Nenhum resultado' : 'Nenhuma cliente ainda') + '</div><p style="font-size:12px;">' + (f ? 'Tente outro nome.' : 'Clique em Nova Cliente para comecar.') + '</p></div>';
+      return;
+    }
+    var html = '';
+    for(var i=0; i<vis.length; i++) {
+      var c = vis[i];
+      var nome = c.data.nome || 'Sem nome';
+      var p = nome.trim().split(' ');
+      var av = (p.length >= 2 ? p[0][0] + p[p.length-1][0] : p[0][0]).toUpperCase();
+      var ini = c.data.inicio ? new Date(c.data.inicio + 'T12:00:00').toLocaleDateString('pt-BR') : '';
+      var tel = c.data.tel || '';
+      html += '<div class="cliente-card" onclick="abrirCliente(\'' + c.key + '\')">';
+      html += '<div class="cc-av">' + av + '</div>';
+      html += '<div class="cc-info"><div class="cc-nome">' + nome + '</div>';
+      html += '<div class="cc-meta">' + tel + (ini ? ' - Desde ' + ini : '') + '</div></div>';
+      html += '<button class="cc-del" onclick="event.stopPropagation();deletarCliente(\'' + c.key + '\',\'' + nome.replace(/'/g,"\\'") + '\')">🗑️</button>';
+      html += '<div class="cc-setas">›</div></div>';
+    }
+    cont.innerHTML = html;
+  });
 }
-
 function filtrarLista(v) { renderLista(v); }
 
 function deletarCliente(key, nome) {
   if(!confirm('Remover "' + nome + '" permanentemente?')) return;
-  if(DB.deletar(key)) { toast('Removida: ' + nome); renderLista(document.getElementById('busca').value); }
-  else toast('Erro ao remover', 'err');
+  DB.deletar(key, function(ok) {
+    if(ok) { toast('Removida: ' + nome); renderLista(document.getElementById('busca').value); }
+    else toast('Erro ao remover', 'err');
+  });
 }
 
 function novaCliente() {
-  clienteKey = 'vc_' + Date.now();
+  clienteKey = 'c' + Date.now();
   resetarFicha();
   mostrarFicha();
   aba('dados', document.querySelector('.tab'));
@@ -495,10 +511,11 @@ function novaCliente() {
 function abrirCliente(key) {
   clienteKey = key;
   resetarFicha();
-  var d = DB.carregar(key);
-  if(d) carregarDados(d);
-  mostrarFicha();
-  aba('dados', document.querySelector('.tab'));
+  DB.carregar(key, function(d) {
+    if(d) carregarDados(d);
+    mostrarFicha();
+    aba('dados', document.querySelector('.tab'));
+  });
 }
 
 function salvarCliente() {
@@ -507,11 +524,12 @@ function salvarCliente() {
   var btn = document.getElementById('btn-salvar');
   btn.textContent = 'Salvando...';
   btn.disabled = true;
-  var ok = DB.salvar(clienteKey, coletarDados());
-  btn.textContent = 'Salvar';
-  btn.disabled = false;
-  if(ok) toast('Salvo: ' + nome);
-  else toast('Erro ao salvar!', 'err');
+  DB.salvar(clienteKey, coletarDados(), function(ok) {
+    btn.textContent = 'Salvar';
+    btn.disabled = false;
+    if(ok) toast('Salvo: ' + nome);
+    else toast('Erro ao salvar!', 'err');
+  });
 }
 
 function coletarDados() {
@@ -530,25 +548,20 @@ function coletarDados() {
   }
   var tratInt = []; document.querySelectorAll('#trat-int .tog.on').forEach(function(t){ tratInt.push(t.textContent); });
   var saude = []; document.querySelectorAll('#saude-tog .tog.on').forEach(function(t){ saude.push(t.textContent); });
-  // coletar sessoes
   var sessoes = [];
   var cards = document.querySelectorAll('.sess-card');
   for(var i=0; i<cards.length; i++) {
     var card = cards[i];
     var sid = card.id.replace('sc','');
-    var inputs = card.querySelectorAll('input,select,textarea');
-    var inputVals = [];
-    for(var j=0; j<inputs.length; j++) inputVals.push(inputs[j].value);
-    var trats = [];
-    card.querySelectorAll('.tt.on').forEach(function(t){ trats.push(t.textContent); });
+    var trats = []; card.querySelectorAll('.tt.on').forEach(function(t){ trats.push(t.textContent); });
     var params = [];
     card.querySelectorAll('.params-wrap').forEach(function(pw){
       var pid = pw.id.replace('pw'+sid+'_','');
-      var pInputs = pw.querySelectorAll('input');
-      var pVals = [];
-      pInputs.forEach(function(pi){ pVals.push(pi.value); });
+      var pVals = []; pw.querySelectorAll('input').forEach(function(pi){ pVals.push(pi.value); });
       params.push({id:pid, vals:pVals, ativo:pw.classList.contains('on')});
     });
+    var allInputs = card.querySelectorAll('input[type=date], select, textarea');
+    var inputVals = []; allInputs.forEach(function(el){ inputVals.push(el.value); });
     sessoes.push({id:sid, inputVals:inputVals, trats:trats, params:params});
   }
   return {
@@ -560,8 +573,8 @@ function coletarDados() {
     tabag:g('tabag'), sono:g('sono'), obsHab:g('obs-hab'),
     proxSess:g('prox-sess'), freq:g('freq'), orient:g('orient'),
     scores: scores.slice(), medidas: medidas, nMedCols: nMedCols,
-    obsItems: obsItems, tratInt: tratInt, saude: saude, sCount: sCount,
-    sessoes: sessoes, salvoEm: new Date().toISOString()
+    obsItems: obsItems, tratInt: tratInt, saude: saude,
+    sCount: sCount, sessoes: sessoes, salvoEm: new Date().toISOString()
   };
 }
 
@@ -588,51 +601,41 @@ function carregarDados(d) {
   if(d.obsItems && d.obsItems.length > 0) {
     var html = '';
     for(var i=0;i<d.obsItems.length;i++) html += '<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">'+d.obsItems[i].date+'</div><div class="tl-text">'+d.obsItems[i].text+'</div></div>';
-    document.getElementById('tl').innerHTML = html;
-    obsN = d.obsItems.length;
+    document.getElementById('tl').innerHTML = html; obsN = d.obsItems.length;
   }
-  // carregar sessoes salvas
   if(d.sessoes && d.sessoes.length > 0) {
     sCount = 0;
     document.getElementById('sess-cont').innerHTML = '';
     document.getElementById('sess-empty').style.display = 'none';
-    for(var i = d.sessoes.length-1; i >= 0; i--) {
+    for(var i=d.sessoes.length-1; i>=0; i--) {
       addSessao();
       var sess = d.sessoes[i];
       var card = document.getElementById('sc'+sCount);
       if(!card) continue;
-      // restaurar tratamentos ativos
       if(sess.trats) {
-        for(var j=0; j<sess.trats.length; j++) {
-          var tags = card.querySelectorAll('.tt');
-          for(var k=0; k<tags.length; k++) {
-            if(tags[k].textContent === sess.trats[j]) {
-              tags[k].classList.add('on');
-              var pwId = tags[k].id.replace('t'+sCount+'_','');
+        for(var j=0;j<sess.trats.length;j++) {
+          card.querySelectorAll('.tt').forEach(function(tag){
+            if(tag.textContent === sess.trats[j]) {
+              tag.classList.add('on');
+              var pwId = tag.id.replace('t'+sCount+'_','');
               var pw = document.getElementById('pw'+sCount+'_'+pwId);
               if(pw) pw.classList.add('on');
             }
-          }
+          });
         }
       }
-      // restaurar params
       if(sess.params) {
-        for(var j=0; j<sess.params.length; j++) {
-          var p = sess.params[j];
-          var pw = document.getElementById('pw'+sCount+'_'+p.id);
-          if(pw && p.vals) {
+        for(var j=0;j<sess.params.length;j++) {
+          var pw = document.getElementById('pw'+sCount+'_'+sess.params[j].id);
+          if(pw && sess.params[j].vals) {
             var pInputs = pw.querySelectorAll('input');
-            for(var k=0; k<pInputs.length && k<p.vals.length; k++) pInputs[k].value = p.vals[k];
+            for(var k=0;k<pInputs.length&&k<sess.params[j].vals.length;k++) pInputs[k].value = sess.params[j].vals[k];
           }
         }
       }
-      // restaurar inputs gerais (data, reacao, obs)
       if(sess.inputVals) {
-        var allInputs = card.querySelectorAll('input[type=date]:not(.param input), select, textarea');
-        var vi = 0;
-        for(var j=0; j<allInputs.length && vi<sess.inputVals.length; j++) {
-          allInputs[j].value = sess.inputVals[vi++];
-        }
+        var allInputs = card.querySelectorAll('input[type=date], select, textarea');
+        for(var j=0;j<allInputs.length&&j<sess.inputVals.length;j++) allInputs[j].value = sess.inputVals[j];
       }
     }
   }
@@ -658,6 +661,39 @@ function resetarFicha() {
   renderMed(); renderFotos();
 }
 
+function buscaRapida(v) {
+  var res = document.getElementById('busca-resultado');
+  if(!v || v.length < 2) { res.style.display='none'; return; }
+  DB.listar(function(clientes) {
+    var encontrados = clientes.filter(function(c){ return (c.data.nome||'').toLowerCase().indexOf(v.toLowerCase()) >= 0; });
+    if(encontrados.length === 0) {
+      res.style.display='block';
+      res.innerHTML='<div style="padding:12px 16px;color:var(--ci);font-size:13px;font-family:Arial,sans-serif;">Nenhuma paciente encontrada</div>';
+      return;
+    }
+    res.style.display='block';
+    var html='';
+    for(var i=0;i<encontrados.length;i++) {
+      var c=encontrados[i];
+      var nome=c.data.nome||'Sem nome';
+      var p=nome.trim().split(' ');
+      var av=(p.length>=2?p[0][0]+p[p.length-1][0]:p[0][0]).toUpperCase();
+      var tel=c.data.tel||'';
+      html+='<div onclick="selecionarBusca(\''+c.key+'\')" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--n2);">';
+      html+='<div style="width:38px;height:38px;border-radius:50%;background:var(--m);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:var(--g2);flex-shrink:0;">'+av+'</div>';
+      html+='<div><div style="font-size:14px;font-weight:bold;color:var(--m);">'+nome+'</div>';
+      html+='<div style="font-size:11px;color:var(--ci);font-family:Arial,sans-serif;">'+tel+'</div></div>';
+      html+='<div style="margin-left:auto;color:var(--g);font-size:12px;font-family:Arial,sans-serif;font-weight:bold;">Abrir</div></div>';
+    }
+    res.innerHTML=html;
+  });
+}
+function selecionarBusca(key) {
+  document.getElementById('busca-rapida').value='';
+  document.getElementById('busca-resultado').style.display='none';
+  abrirCliente(key);
+}
+
 function atualizarHero() {
   var n = document.getElementById('nome').value;
   if(n) {
@@ -675,19 +711,16 @@ function atualizarHero() {
   }
   prog();
 }
-
 function calcImc() {
   var p=parseFloat(document.getElementById('peso').value);
   var a=parseFloat(document.getElementById('alt').value)/100;
   if(p&&a) document.getElementById('imc-val').value=(p/(a*a)).toFixed(1);
 }
-
 function prog() {
   var ids=['nome','tel','inicio','obj','peso'];
   var n=0; for(var i=0;i<ids.length;i++) { var el=document.getElementById(ids[i]); if(el&&el.value) n++; }
   document.getElementById('pct').textContent=Math.round(n/ids.length*100)+'%';
 }
-
 function alerta(el,msg,tipo) {
   el.classList.toggle('on');
   var key=msg.substring(0,15);
@@ -697,7 +730,6 @@ function alerta(el,msg,tipo) {
   for(var i=0;i<vals.length;i++) html+='<div class="alerta al-'+vals[i].tipo+'"><span>'+(vals[i].tipo==='err'?'🚨':'⚠️')+'</span><span style="font-size:12px;font-family:Arial,sans-serif;">'+vals[i].msg+'</span></div>';
   document.getElementById('alertas').innerHTML=html;
 }
-
 function aba(id,btn) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('on'); });
@@ -705,12 +737,9 @@ function aba(id,btn) {
   btn.classList.add('on');
   if(id==='evolucao') kpis();
 }
-
 function togCard(h) {
-  var b=h.nextElementSibling, a=h.querySelector('.card-arrow');
-  b.classList.toggle('hide');
+  var b=h.nextElementSibling; b.classList.toggle('hide');
 }
-
 function renderMed(saved) {
   var tb=document.getElementById('med-body'); tb.innerHTML='';
   for(var i=0;i<REGS.length;i++) {
@@ -723,9 +752,8 @@ function renderMed(saved) {
   }
   graf();
 }
-
 function delta(i) {
-  var ini=parseFloat(document.getElementById('m'+i+'_0')&&document.getElementById('m'+i+'_0').value)||0;
+  var el0=document.getElementById('m'+i+'_0'); var ini=el0?parseFloat(el0.value)||0:0;
   var ult=0;
   for(var c=nMedCols;c>=1;c--) { var el=document.getElementById('m'+i+'_'+c); var v=el?parseFloat(el.value):NaN; if(!isNaN(v)&&v>0){ult=v;break;} }
   var dt=document.getElementById('dt'+i);
@@ -733,7 +761,6 @@ function delta(i) {
   else { dt.className='d-n'; dt.textContent='-'; }
   graf();
 }
-
 function addColMed() {
   nMedCols++;
   var head=document.querySelector('#med-t thead tr');
@@ -742,11 +769,10 @@ function addColMed() {
   var rows=document.querySelectorAll('#med-body tr');
   for(var i=0;i<rows.length;i++) { var td=document.createElement('td'); td.innerHTML='<input type="number" step="0.1" placeholder="0.0" id="m'+i+'_'+nMedCols+'" oninput="delta('+i+')">'; rows[i].insertBefore(td,rows[i].lastElementChild); }
 }
-
 function graf() {
   var g=document.getElementById('graf'); g.innerHTML='';
   for(var i=0;i<REGS.length;i++) {
-    var ini=parseFloat(document.getElementById('m'+i+'_0')&&document.getElementById('m'+i+'_0').value)||0;
+    var el0=document.getElementById('m'+i+'_0'); var ini=el0?parseFloat(el0.value)||0:0;
     var ult=0;
     for(var c=nMedCols;c>=1;c--) { var el=document.getElementById('m'+i+'_'+c); var v=el?parseFloat(el.value):NaN; if(!isNaN(v)&&v>0){ult=v;break;} }
     var diff=ini>0&&ult>0?Math.max(0,ini-ult):0;
@@ -754,7 +780,6 @@ function graf() {
     g.innerHTML+='<div class="bar-wrap"><div class="bar-val">'+(diff>0?diff.toFixed(1):'-')+'</div><div class="bar" style="height:'+h+'px;min-height:'+(diff>0?3:0)+'px;"></div><div class="bar-lbl">'+REGS[i].substring(0,5)+'</div></div>';
   }
 }
-
 function addSessao() {
   sCount++;
   document.getElementById('sess-empty').style.display='none';
@@ -768,34 +793,28 @@ function addSessao() {
   }
   document.getElementById('sess-cont').insertAdjacentHTML('afterbegin','<div class="sess-card" id="sc'+sCount+'"><div class="sess-head"><div style="display:flex;align-items:center;gap:10px;"><div class="sess-num">'+sCount+'</div><div><div style="font-size:16px;font-weight:bold;color:var(--m);">Sessao '+sCount+'</div><input type="date" value="'+today+'" style="font-size:11px;color:var(--ci);border:none;background:none;font-family:Arial,sans-serif;"></div></div><button class="sess-del" onclick="delSessao('+sCount+')">🗑️</button></div><div class="trat-tags">'+tags+'</div><div id="prms'+sCount+'">'+params+'</div><div class="div"></div><div class="grid g2"><div class="field"><label>Reacao</label><select><option value="">Selecione</option><option>Muito bem</option><option>Leve desconforto</option><option>Desconforto moderado</option><option>Interrompido</option></select></div><div class="field"><label>Proxima sessao</label><input type="date"></div><div class="field full"><label>Observacoes</label><textarea placeholder="Evolucao, ajustes..."></textarea></div></div></div>');
 }
-
 function togTrat(s,id) {
   var tag=document.getElementById('t'+s+'_'+id); tag.classList.toggle('on');
   var pw=document.getElementById('pw'+s+'_'+id); if(pw) pw.classList.toggle('on',tag.classList.contains('on'));
 }
-
 function delSessao(n) {
   if(confirm('Remover esta sessao?')) { var el=document.getElementById('sc'+n); if(el) el.remove(); if(!document.querySelector('.sess-card')){document.getElementById('sess-empty').style.display='block';sCount=0;} }
 }
-
 function renderFotos() {
   var html='';
   for(var i=0;i<ANGS.length;i++) html+='<div><div class="foto-slot" id="fs'+i+'" onclick="document.getElementById(\'fi'+i+'\').click()"><span class="foto-add">📷</span><span class="foto-txt">'+ANGS[i]+'</span></div><input type="file" id="fi'+i+'" accept="image/*" onchange="loadFoto('+i+',this)"><div class="foto-lbl">'+ANGS[i]+'</div></div>';
   document.getElementById('fotos-grid').innerHTML=html;
 }
-
 function loadFoto(i,inp) {
   if(!inp.files[0]) return;
   var r=new FileReader();
   r.onload=function(e){ var s=document.getElementById('fs'+i); s.innerHTML='<img src="'+e.target.result+'" alt="foto">'; s.onclick=function(){ document.getElementById('fi'+i).click(); }; };
   r.readAsDataURL(inp.files[0]);
 }
-
 function star(gi,val) {
   scores[gi]=val;
   document.querySelectorAll('#sc'+gi+' .star').forEach(function(s,i){ s.classList.toggle('on',i<val); });
 }
-
 function addObs() {
   var txt=document.getElementById('nova-obs').value.trim();
   if(!txt) return;
@@ -806,11 +825,10 @@ function addObs() {
   tl.insertAdjacentHTML('afterbegin','<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">'+d+'</div><div class="tl-text">'+txt+'</div></div>');
   document.getElementById('nova-obs').value='';
 }
-
 function kpis() {
   var ns=document.querySelectorAll('.sess-card').length, tot=0;
   for(var i=0;i<REGS.length;i++) {
-    var ini=parseFloat(document.getElementById('m'+i+'_0')&&document.getElementById('m'+i+'_0').value)||0, ult=0;
+    var el0=document.getElementById('m'+i+'_0'); var ini=el0?parseFloat(el0.value)||0:0; var ult=0;
     for(var c=nMedCols;c>=1;c--) { var el=document.getElementById('m'+i+'_'+c); var v=el?parseFloat(el.value):NaN; if(!isNaN(v)&&v>0){ult=v;break;} }
     if(ini>0&&ult>0) tot+=Math.max(0,ini-ult);
   }
@@ -821,47 +839,6 @@ function kpis() {
   var html=''; for(var i=0;i<data.length;i++) html+='<div class="kpi"><div class="kpi-icon">'+data[i].ic+'</div><div class="kpi-val">'+data[i].v+'</div><div class="kpi-unit">'+data[i].u+'</div><div class="kpi-lbl">'+data[i].l+'</div></div>';
   document.getElementById('kpis').innerHTML=html;
 }
-
-function buscaRapida(v) {
-  var res = document.getElementById('busca-resultado');
-  if(!v || v.length < 2) { res.style.display='none'; return; }
-  var keys = DB.listar();
-  var encontrados = [];
-  for(var i=0;i<keys.length;i++) {
-    var d = DB.carregar(keys[i]);
-    if(d && d.nome && d.nome.toLowerCase().indexOf(v.toLowerCase()) >= 0) encontrados.push({key:keys[i],data:d});
-  }
-  if(encontrados.length === 0) {
-    res.style.display='block';
-    res.innerHTML='<div style="padding:12px 16px;color:var(--ci);font-size:13px;font-family:Arial,sans-serif;">Nenhuma paciente encontrada</div>';
-    return;
-  }
-  res.style.display='block';
-  var html='';
-  for(var i=0;i<encontrados.length;i++) {
-    var c=encontrados[i];
-    var nome=c.data.nome||'Sem nome';
-    var p=nome.trim().split(' ');
-    var av=(p.length>=2?p[0][0]+p[p.length-1][0]:p[0][0]).toUpperCase();
-    var tel=c.data.tel||'';
-    var ini=c.data.inicio?new Date(c.data.inicio+'T12:00:00').toLocaleDateString('pt-BR'):'';
-    var safeKey=c.key.replace(/'/g,"\\'");
-    html+='<div onclick="selecionarBusca(\''+safeKey+'\')" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--n2);">';
-    html+='<div style="width:38px;height:38px;border-radius:50%;background:var(--m);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:var(--g2);flex-shrink:0;">'+av+'</div>';
-    html+='<div><div style="font-size:14px;font-weight:bold;color:var(--m);">'+nome+'</div>';
-    html+='<div style="font-size:11px;color:var(--ci);font-family:Arial,sans-serif;">'+tel+(ini?' · Desde '+ini:'')+'</div></div>';
-    html+='<div style="margin-left:auto;color:var(--g);font-size:12px;font-family:Arial,sans-serif;font-weight:bold;">Abrir →</div>';
-    html+='</div>';
-  }
-  res.innerHTML=html;
-}
-
-function selecionarBusca(key) {
-  document.getElementById('busca-rapida').value='';
-  document.getElementById('busca-resultado').style.display='none';
-  abrirCliente(key);
-}
-
 function toast(msg, tipo) {
   var t=document.getElementById('toast');
   t.textContent=msg; t.className='toast'+(tipo==='err'?' err':'');
